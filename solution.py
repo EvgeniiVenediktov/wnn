@@ -16,14 +16,18 @@ class PredictionModel:
     of all previous values in the current sequence.
     """
 
-    def __init__(self):
+    def __init__(self, max_len=100):
         self.current_seq_ix = None
         self.sequence_history = []
+        self.max_len = max_len
 
     def predict(self, data_point: DataPoint) -> np.ndarray:
         if self.current_seq_ix != data_point.seq_ix:
             self.current_seq_ix = data_point.seq_ix
             self.sequence_history = []
+        
+        if len(self.sequence_history) == self.max_len:
+            self.sequence_history.pop(0)
 
         self.sequence_history.append(data_point.state.copy())
 
@@ -38,7 +42,7 @@ if __name__ == "__main__":
     test_file = f"{CURRENT_DIR}/../../datasets/train.parquet"
 
     # Create and test our model
-    model = PredictionModel()
+    model = PredictionModel(max_len=40)
 
     # Load data into scorer
     scorer = ScorerStepByStep(test_file)
